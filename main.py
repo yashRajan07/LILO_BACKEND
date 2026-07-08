@@ -10,6 +10,7 @@ Usage:
     # or
     uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
+
 """
 
 import os
@@ -103,11 +104,13 @@ async def websocket_endpoint(websocket: WebSocket):
 
 # ── Main Entry Point ──────────────────────────────────────────────
 if __name__ == "__main__":
-    logger.info(f"Starting LILO Voice Assistant on {SERVER_HOST}:{SERVER_PORT}")
+    reload_mode = os.getenv("RELOAD", "False").lower() == "true"
+    logger.info(f"Starting LILO Voice Assistant on {SERVER_HOST}:{SERVER_PORT} (reload={reload_mode})")
     uvicorn.run(
         "main:app",
         host=SERVER_HOST,
         port=SERVER_PORT,
-        reload=True,
+        reload=reload_mode,
         log_level="info",
     )
+

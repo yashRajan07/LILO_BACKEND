@@ -1,5 +1,5 @@
 # ── Core Framework ────────────────────────────────────────────────
-pipecat-ai[google,sarvam,openai,silero]
+pipecat-ai[sarvam,openai,silero]
 
 # ── Web Server ────────────────────────────────────────────────────
 fastapi>=0.137.0
