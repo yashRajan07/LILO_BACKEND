@@ -15,7 +15,6 @@ load_dotenv()
 # ──────────────────────────────────────────────
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 SARVAM_API_KEY = os.getenv("SARVAM_API_KEY", "")
-GOOGLE_APPLICATION_CREDENTIALS = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "")
 
 # ──────────────────────────────────────────────
 # Audio Configuration
