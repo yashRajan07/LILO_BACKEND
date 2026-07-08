@@ -105,7 +105,7 @@ class ESP32OutputProcessor(FrameProcessor):
                 self.total_bytes_sent += len(full_packet)
                 
                 if self.packets_sent % 10 == 0 or self.packets_sent == 1:
-                    logger.info(f"🚀 Network Flush: Packet #{self.packets_sent} sent successfully.")
+                    logger.debug(f"🚀 Network Flush: Packet #{self.packets_sent} sent successfully.")
             except Exception as e:
                 logger.error(f"❌ Network Drop: Failed to write audio packet: {e}")
             return  # Consume the audio frame
@@ -114,10 +114,10 @@ class ESP32OutputProcessor(FrameProcessor):
         elif isinstance(frame, TTSStartedFrame) or isinstance(frame, TTSStoppedFrame):
             try:
                 if isinstance(frame, TTSStartedFrame):
-                    logger.info(f"🚀 Network Flush: Dispatching text event -> type: tts, state:start")
+                    logger.debug(f"🚀 Network Flush: Dispatching text event -> type: tts, state:start")
                     await self.ws.send_text(json.dumps({"type": "tts", "state": "start"}))
                 elif isinstance(frame, TTSStoppedFrame):
-                    logger.info(f"🚀 Network Flush: Dispatching text event -> type: tts, state:stop")
+                    logger.debug(f"🚀 Network Flush: Dispatching text event -> type: tts, state:stop")
                     await self.ws.send_text(json.dumps({"type": "tts", "state": "stop"}))
                     
             except Exception as e:

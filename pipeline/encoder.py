@@ -14,26 +14,26 @@ class PipelineOpusEncoder(FrameProcessor):
         await super().process_frame(frame, direction)
         
         if isinstance(frame, TTSStartedFrame):
-            logger.info("PipelineOpusEncoder: Resetting encoder state for new stream.")
+            logger.debug("PipelineOpusEncoder: Resetting encoder state for new stream.")
             self.encoder_utils.reset_state()
             await self.push_frame(frame, direction)
             return
 
         elif isinstance(frame, TTSStoppedFrame):
-            logger.info("PipelineOpusEncoder: Flushing encoder buffer at end of TTS stream.")
+            logger.debug("PipelineOpusEncoder: Flushing encoder buffer at end of TTS stream.")
             try:
                 packet_count = 0
                 for opus_packet in self.encoder_utils.encode_pcm_to_opus_stream(b"", end_of_stream=True):
                     packet_count += 1
                     await self.push_frame(OutboundOpusAudioFrame(data=opus_packet), direction)
-                logger.info(f"PipelineOpusEncoder: Flushed {packet_count} final Opus packets.")
+                logger.debug(f"PipelineOpusEncoder: Flushed {packet_count} final Opus packets.")
             except Exception as e:
                 logger.error(f"PipelineOpusEncoder: Error flushing encoder: {e}", exc_info=True)
             await self.push_frame(frame, direction)
             return
 
         elif isinstance(frame, InterruptionFrame):
-            logger.info("PipelineOpusEncoder: Interruption detected. Resetting encoder state.")
+            logger.debug("PipelineOpusEncoder: Interruption detected. Resetting encoder state.")
             self.encoder_utils.reset_state()
             await self.push_frame(frame, direction)
             return
