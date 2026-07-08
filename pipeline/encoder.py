@@ -48,7 +48,7 @@ class PipelineOpusEncoder(FrameProcessor):
             if not pcm_data:
                 return
 
-            logger.info(f"PipelineOpusEncoder: Received {len(pcm_data)} bytes from accumulator. Starting compression...")
+            logger.debug(f"PipelineOpusEncoder: Received {len(pcm_data)} bytes from accumulator. Starting compression...")
 
             try:
                 packet_count = 0
@@ -58,7 +58,7 @@ class PipelineOpusEncoder(FrameProcessor):
                     packet_count += 1
                     await self.push_frame(OutboundOpusAudioFrame(data=opus_packet), direction)
                     
-                logger.info(f"PipelineOpusEncoder: Compression finished! Pushed {packet_count} OutboundOpusAudioFrames downstream.")
+                logger.debug(f"PipelineOpusEncoder: Compression finished! Pushed {packet_count} OutboundOpusAudioFrames downstream.")
                 
             except Exception as e:
                 logger.error(f"PipelineOpusEncoder: Error processing compression loop: {e}", exc_info=True)
