@@ -16,6 +16,9 @@ from config.settings import (
     SYSTEM_PROMPT,
     AUDIO_IN_SAMPLE_RATE,
     VAD_CONFIDENCE,
+    VAD_MIN_VOLUME,
+    VAD_START_SECS,
+    VAD_STOP_SECS,
     USER_SPEECH_TIMEOUT,
 )
 
@@ -35,10 +38,10 @@ def create_context_aggregator() -> tuple[LLMContext, LLMContextAggregatorPair]:
         vad_analyzer=SileroVADAnalyzer(
             sample_rate=AUDIO_IN_SAMPLE_RATE,
             params=VADParams(
-                confidence=0.5,     # Speech probability threshold
-                min_volume=0.0,     # Disable raw RMS volume gate (delegate entirely to neural model)
-                start_secs=0.1,     # Trigger speaking state after 100ms of speech
-                stop_secs=0.2       # Standard silence trailing gap window
+                confidence=VAD_CONFIDENCE,
+                min_volume=VAD_MIN_VOLUME,
+                start_secs=VAD_START_SECS,
+                stop_secs=VAD_STOP_SECS
             ),
         ),
         user_turn_strategies=UserTurnStrategies(
