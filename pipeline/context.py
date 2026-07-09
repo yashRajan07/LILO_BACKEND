@@ -35,9 +35,9 @@ def create_context_aggregator() -> tuple[LLMContext, LLMContextAggregatorPair]:
         vad_analyzer=SileroVADAnalyzer(
             sample_rate=AUDIO_IN_SAMPLE_RATE,
             params=VADParams(
-                confidence=VAD_CONFIDENCE,
-                min_volume=0.1,     # Lowered to 0.1 to match ESP32 microphone signal amplitude
-                start_secs=0.2,     # User must speak for 200ms to register, filtering transient clicks
+                confidence=0.5,     # Speech probability threshold
+                min_volume=0.0,     # Disable raw RMS volume gate (delegate entirely to neural model)
+                start_secs=0.1,     # Trigger speaking state after 100ms of speech
                 stop_secs=0.2       # Standard silence trailing gap window
             ),
         ),
