@@ -10,6 +10,7 @@ class PipelineAudioRateController(FrameProcessor):
     def __init__(self, rate_controller):
         super().__init__()
         self.rate_controller = rate_controller
+        self.sent_packet_count = 0
 
     def _ensure_background_worker_is_alive(self, direction):
         task = self.rate_controller.pending_send_task
@@ -24,17 +25,15 @@ class PipelineAudioRateController(FrameProcessor):
 
         # ── A. CUSTOM CONTROL FRAMES ────────────────────────────────────────
         if isinstance(frame, TTSStartedFrame):
-            logger.info("PipelineAudioRateController: Sentence arriving. Queueing START marker.")
-            async def send_start():
-                logger.info("PipelineAudioRateController: Releasing custom START marker downstream.")
-                await self.push_frame(frame, direction)
-            self.rate_controller.add_message(send_start)
+            logger.info("PipelineAudioRateController: Sentence arriving. Resetting pre-buffer count and releasing START marker immediately.")
+            self.sent_packet_count = 0
+            await self.push_frame(frame, direction)
             return
                 
         elif isinstance(frame, TTSStoppedFrame): 
             logger.info("PipelineAudioRateController: STOP marker received. Queueing STOP marker.")
             async def send_stop():
-                # Wait for the virtual playback timeline to reach the end of the last audio frame
+                # 1. Wait for the virtual playback timeline of paced audio to finish
                 while True:
                     elapsed = self.rate_controller._get_elapsed_ms()
                     remaining = self.rate_controller.play_position - elapsed
@@ -42,6 +41,12 @@ class PipelineAudioRateController(FrameProcessor):
                         await asyncio.sleep(remaining / 1000.0)
                     else:
                         break
+                # 2. Wait for the pre-buffered (bypassed) audio packets to finish playing on client
+                if self.sent_packet_count > 0:
+                    pre_buffer_time = (self.sent_packet_count * self.rate_controller.frame_duration) / 1000.0
+                    logger.info(f"PipelineAudioRateController: Waiting an additional {pre_buffer_time}s for pre-buffered frames to complete.")
+                    await asyncio.sleep(pre_buffer_time)
+                
                 logger.info("PipelineAudioRateController: Queue completely cleared. Releasing custom STOP marker downstream.")
                 await self.push_frame(frame, direction)
             self.rate_controller.add_message(send_stop)
@@ -49,7 +54,12 @@ class PipelineAudioRateController(FrameProcessor):
 
         # ── B. PACED AUDIO DATA PACKETS ─────────────────────────────────────
         elif isinstance(frame, OutboundOpusAudioFrame):
-            self.rate_controller.add_audio(frame.data)
+            if self.sent_packet_count < 5:
+                self.sent_packet_count += 1
+                logger.info(f"PipelineAudioRateController: Pre-buffering audio frame #{self.sent_packet_count} directly downstream.")
+                await self.push_frame(frame, direction)
+            else:
+                self.rate_controller.add_audio(frame.data)
             return
 
         # ── C. RESET STRUCTURES ON INTERRUPTION ─────────────────────────────

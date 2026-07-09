@@ -124,5 +124,14 @@ class ESP32OutputProcessor(FrameProcessor):
                 logger.error(f"❌ Network Drop: Failed to write state change text: {e}")
             return  # Consume the control frame
 
+        # ── 3. INTERRUPTION NOTIFICATION: Force Mute Client Speaker ────────
+        elif isinstance(frame, InterruptionFrame):
+            try:
+                logger.info("🚀 Network Flush: Interruption detected. Dispatching text event -> type: tts, state:stop")
+                await self.ws.send_text(json.dumps({"type": "tts", "state": "stop"}))
+            except Exception as e:
+                logger.error(f"❌ Network Drop: Failed to write interruption stop text: {e}")
+            # Do NOT return here, let InterruptionFrame propagate downstream
+
         # Make sure system control frames (like EndFrame) flow through cleanly
         await self.push_frame(frame, direction)

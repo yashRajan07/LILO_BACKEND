@@ -1,7 +1,6 @@
 """
 LILO Voice Assistant — Pipeline Assembly
 """
-import aiohttp
 import logging
 from fastapi import WebSocket
 
@@ -12,7 +11,6 @@ from pipecat.pipeline.worker import PipelineWorker, PipelineParams
 from transports.esp32_transport import ESP32Transport
 
 # Custom Processing Nodes
-from pipeline.accumulator import SentenceAudioAccumulator
 from pipeline.encoder import PipelineOpusEncoder
 from pipeline.pacer import PipelineAudioRateController
 from pipeline.decoder import PipelineOpusDecoder
@@ -86,7 +84,6 @@ class MetricsInfoLogObserver(MetricsLogObserver):
 async def create_pipeline_worker(websocket: WebSocket) -> PipelineWorker:
     # ── 1. Create the ESP32 transport directly with the raw socket ──
     transport = ESP32Transport(websocket)
-    session = aiohttp.ClientSession()
 
 
     # ── 2. Create core utility tools ───────────────────────────────
@@ -95,14 +92,13 @@ async def create_pipeline_worker(websocket: WebSocket) -> PipelineWorker:
     pacer_tool = AudioRateController(frame_duration=AUDIO_FRAME_SIZE_MS)
 
     # ── 3. Instantiate processing elements ─────────────────────────
-    accumulator = SentenceAudioAccumulator()
     encoder = PipelineOpusEncoder(opus_encoder_utils=opus_tool)
     rate_controller = PipelineAudioRateController(rate_controller=pacer_tool)
 
     # ── 4. Create cognitive services ───────────────────────────────
     stt = create_stt_service()
     llm = create_llm_service()
-    tts = create_tts_service(aiohttp_session=session)
+    tts = create_tts_service()
 
     # ── 5. Create context and aggregators ──────────────────────────
     context, aggregator = create_context_aggregator()
@@ -119,7 +115,6 @@ async def create_pipeline_worker(websocket: WebSocket) -> PipelineWorker:
             aggregator.assistant(),  
             
             # Custom Outbound Audio Stream Processors
-            accumulator,             
             encoder,                 
             rate_controller,         
             

@@ -1,5 +1,4 @@
 import logging
-import aiohttp
 from pipecat.services.sarvam.tts import SarvamTTSService
 from pipecat.services.tts_service import TextAggregationMode
 
@@ -15,7 +14,7 @@ from config.settings import (
 
 logger = logging.getLogger(__name__)
 
-def create_tts_service(aiohttp_session: aiohttp.ClientSession) -> SarvamTTSService:
+def create_tts_service() -> SarvamTTSService:
     # Instantiate the streaming WebSocket-based SarvamTTSService
     tts = SarvamTTSService(
         api_key=SARVAM_API_KEY,
@@ -25,7 +24,6 @@ def create_tts_service(aiohttp_session: aiohttp.ClientSession) -> SarvamTTSServi
             voice=SARVAM_TTS_VOICE,
             language=SARVAM_TTS_LANGUAGE,                        
         ),
-        stop_frame_timeout_s=15.0,
     )
 
     # Re-apply the internal format patch directly to the native instance

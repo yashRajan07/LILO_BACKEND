@@ -60,7 +60,7 @@ SARVAM_STT_LANGUAGE = os.getenv("SARVAM_STT_LANGUAGE", "en-IN")
 # VAD & Turn Configuration (Pipecat 1.0 standard)
 # ──────────────────────────────────────────────
 VAD_CONFIDENCE = 0.7
-USER_SPEECH_TIMEOUT = 1.5      # Seconds of silence before the bot replies
+USER_SPEECH_TIMEOUT = 0.8      # Seconds of silence before the bot replies
 IDLE_TIMEOUT_SECS = None       # None disables the default 5-minute idle timeout, keeping WebSocket connections alive during inactivity
 
 # ──────────────────────────────────────────────
