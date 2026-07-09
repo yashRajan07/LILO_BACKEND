@@ -41,9 +41,11 @@ class PipelineAudioRateController(FrameProcessor):
                         await asyncio.sleep(remaining / 1000.0)
                     else:
                         break
-                # 2. Wait for the pre-buffered (bypassed) audio packets to finish playing on client
+                # 2. Wait for the pre-buffered (bypassed) audio packets to finish playing on client.
+                # Always sleep for at least 7 frames (420ms) as a safety margin (matching xiaozhi-server's (PRE_BUFFER_COUNT + 2) logic)
+                # to prevent network jitter/client start lag from clipping short responses.
                 if self.sent_packet_count > 0:
-                    pre_buffer_time = (self.sent_packet_count * self.rate_controller.frame_duration) / 1000.0
+                    pre_buffer_time = (max(self.sent_packet_count, 7) * self.rate_controller.frame_duration) / 1000.0
                     logger.info(f"PipelineAudioRateController: Waiting an additional {pre_buffer_time}s for pre-buffered frames to complete.")
                     await asyncio.sleep(pre_buffer_time)
                 
@@ -66,5 +68,6 @@ class PipelineAudioRateController(FrameProcessor):
         elif isinstance(frame, InterruptionFrame):
             logger.info("PipelineAudioRateController: Interruption detected. Purging pacer.")
             self.rate_controller.reset()
+            self.sent_packet_count = 0
 
         await self.push_frame(frame, direction)
