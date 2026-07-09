@@ -35,15 +35,15 @@ def create_context_aggregator() -> tuple[LLMContext, LLMContextAggregatorPair]:
         vad_analyzer=SileroVADAnalyzer(
             sample_rate=AUDIO_IN_SAMPLE_RATE,
             params=VADParams(
-                confidence=0.85,    # ──> Raised to 0.85 to require higher neural model certainty.
-                min_volume=0.6,     # ──> Raised to 0.6 to drop moderate background noises, hums, and clicks.
-                start_secs=0.45,    # ──> User must speak continuously for 450ms to register, filtering out transient noises/bursts.
-                stop_secs=0.2       # ──> Standard silence trailing gap window.
+                confidence=VAD_CONFIDENCE,
+                min_volume=0.1,     # Lowered to 0.1 to match ESP32 microphone signal amplitude
+                start_secs=0.2,     # User must speak for 200ms to register, filtering transient clicks
+                stop_secs=0.2       # Standard silence trailing gap window
             ),
         ),
         user_turn_strategies=UserTurnStrategies(
             # Start: Bot stops talking when user says at least 1 word
-            start=[MinWordsUserTurnStartStrategy(min_words=3)],
+            start=[MinWordsUserTurnStartStrategy(min_words=1)],
             # Stop: Bot replies after X seconds of silence
             stop=[SpeechTimeoutUserTurnStopStrategy(user_speech_timeout=USER_SPEECH_TIMEOUT)],
         ),
