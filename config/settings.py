@@ -21,7 +21,7 @@ SARVAM_API_KEY = os.getenv("SARVAM_API_KEY", "")
 # ──────────────────────────────────────────────
 AUDIO_IN_SAMPLE_RATE = 16000       # 16kHz — ESP32 mic & playback rate
 AUDIO_CHUNK_SIZE = 640          # 20ms at 16kHz, 16-bit mono = 640 bytes
-AUDIO_OUT_SAMPLE_RATE = 24000   # TTS output rate (24kHz matches the ESP32's native hardware playback rate)
+AUDIO_OUT_SAMPLE_RATE = 16000   # TTS output rate (16kHz matches the ESP32's native handshake request rate)
 AUDIO_OUT_FORMAT = "linear16"        # Output format: "opus" or "linear16" (PCM)
 AUDIO_FRAME_SIZE_MS = 60             # Frame size in milliseconds for Opus encoding
 
