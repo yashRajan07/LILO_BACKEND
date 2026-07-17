@@ -44,11 +44,23 @@ Rules:
 """
 
 # ──────────────────────────────────────────────
+# TTS Provider Configuration
+# ──────────────────────────────────────────────
+TTS_PROVIDER = os.getenv("TTS_PROVIDER", "sarvam")  # "sarvam" or "elevenlabs"
+
+# ──────────────────────────────────────────────
 # Sarvam TTS Configuration
 # ──────────────────────────────────────────────
 SARVAM_TTS_MODEL = "bulbul:v3"
 SARVAM_TTS_VOICE = "shubh"
 SARVAM_TTS_LANGUAGE = os.getenv("SARVAM_TTS_LANGUAGE", "en-IN")  # Set to "hi-IN" for Hindi
+
+# ──────────────────────────────────────────────
+# ElevenLabs TTS Configuration
+# ──────────────────────────────────────────────
+ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY", "")
+ELEVENLABS_VOICE_ID = os.getenv("ELEVENLABS_VOICE_ID", "21m00Tcm4TlvDq8ikWAM")  # Rachel
+ELEVENLABS_MODEL = os.getenv("ELEVENLABS_MODEL", "eleven_monolingual_v1")
 
 # ──────────────────────────────────────────────
 # Sarvam STT Configuration

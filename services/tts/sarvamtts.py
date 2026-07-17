@@ -1,8 +1,5 @@
 import logging
 from pipecat.services.sarvam.tts import SarvamTTSService
-from pipecat.services.tts_service import TextAggregationMode
-
-
 from config.settings import (
     SARVAM_API_KEY,
     SARVAM_TTS_MODEL,
@@ -14,15 +11,18 @@ from config.settings import (
 
 logger = logging.getLogger(__name__)
 
-def create_tts_service() -> SarvamTTSService:
-    # Instantiate the streaming WebSocket-based SarvamTTSService
+def create_sarvam_tts_service() -> SarvamTTSService:
+    """
+    Instantiates and returns the streaming WebSocket-based SarvamTTSService.
+    """
+    logger.info("Initializing Sarvam TTS Service")
     tts = SarvamTTSService(
         api_key=SARVAM_API_KEY,
         sample_rate=AUDIO_OUT_SAMPLE_RATE,
         settings=SarvamTTSService.Settings(
             model=SARVAM_TTS_MODEL,
             voice=SARVAM_TTS_VOICE,
-            language=SARVAM_TTS_LANGUAGE,                        
+            language=SARVAM_TTS_LANGUAGE,
         ),
     )
 
