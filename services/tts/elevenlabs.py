@@ -30,7 +30,7 @@ def create_elevenlabs_tts_service() -> ElevenLabsTTSService:
         api_key=ELEVENLABS_API_KEY,
         sample_rate=AUDIO_OUT_SAMPLE_RATE,
         settings=settings,
-        text_aggregation_mode=TextAggregationMode.SENTENCE
+        text_aggregation_mode=TextAggregationMode.TOKEN
     )
 
     return tts
