@@ -58,6 +58,12 @@ class PipelineOpusEncoder(FrameProcessor):
             if not pcm_data:
                 return
 
+            # Scale volume to 75% to prevent digital clipping/squeaking on high pitches
+            import numpy as np
+            shorts = np.frombuffer(pcm_data, dtype=np.int16)
+            attenuated_shorts = (shorts * 0.75).astype(np.int16)
+            pcm_data = attenuated_shorts.tobytes()
+
             logger.debug(f"PipelineOpusEncoder: Received {len(pcm_data)} bytes from TTS. Starting compression...")
 
             try:
