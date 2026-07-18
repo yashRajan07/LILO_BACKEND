@@ -31,7 +31,7 @@ class OpusEncoderUtils:
         self.total_frame_size = self.frame_size * channels
 
         # Bitrate and complexity settings
-        self.bitrate = 32000  # bps (32kbps)
+        self.bitrate = 24000  # bps (24kbps)
         self.complexity = 10  # Highest quality
 
         # Initialize buffer as empty
