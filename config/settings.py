@@ -75,7 +75,7 @@ VAD_MIN_VOLUME = 0.05          # Ignored quiet background hum (noise gate)
 VAD_START_SECS = 0.1           # Require 100ms continuous speech to register
 VAD_STOP_SECS = 0.2            # Silence trailing gap window duration in seconds
 USER_SPEECH_TIMEOUT = 0.8      # Seconds of silence before the bot replies
-IDLE_TIMEOUT_SECS = 30         # Auto-closes stalled sessions after 30s of inactivity
+IDLE_TIMEOUT_SECS = None       # None disables the default 5-minute idle timeout, keeping WebSocket connections alive during inactivity
 
 # ──────────────────────────────────────────────
 # Server Configuration
