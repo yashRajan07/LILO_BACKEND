@@ -23,6 +23,7 @@ def create_elevenlabs_tts_service() -> ElevenLabsTTSService:
         similarity_boost=0.50,
         style=0.80,
         use_speaker_boost=False,
+        speed=0.88
     )
 
     tts = ElevenLabsTTSService(
