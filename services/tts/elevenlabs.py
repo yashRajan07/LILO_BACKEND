@@ -19,7 +19,7 @@ def create_elevenlabs_tts_service() -> ElevenLabsTTSService:
     settings = ElevenLabsTTSSettings(
         model=ELEVENLABS_MODEL,
         voice=ELEVENLABS_VOICE_ID,
-        stability=0.80,
+        stability=0.40,
         similarity_boost=0.30,
         style=0.00,
         use_speaker_boost=False,
