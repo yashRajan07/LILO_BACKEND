@@ -1,0 +1,14 @@
+services:
+  backend:
+    build: .
+    container_name: lilo_backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    # volumes:
+    #   - .:/app
+    #   # Mask the local virtualenv inside the container
+    #   # to prevent local host venv from overriding container packages
+    #   - /app/venv/
+    restart: unless-stopped

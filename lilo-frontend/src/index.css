@@ -1,0 +1,167 @@
+@import "tailwindcss";
+
+/* ── Custom Design Tokens ─────────────────────────────────────── */
+@theme {
+  --color-lilo-50: #f0f4ff;
+  --color-lilo-100: #dbe4ff;
+  --color-lilo-200: #bac8ff;
+  --color-lilo-300: #91a7ff;
+  --color-lilo-400: #748ffc;
+  --color-lilo-500: #5c7cfa;
+  --color-lilo-600: #4c6ef5;
+  --color-lilo-700: #4263eb;
+  --color-lilo-800: #3b5bdb;
+  --color-lilo-900: #364fc7;
+
+  --color-coral-400: #ff8787;
+  --color-coral-500: #ff6b6b;
+
+  --color-emerald-400: #69db7c;
+  --color-emerald-500: #51cf66;
+
+  --color-amber-400: #ffd43b;
+  --color-amber-500: #fcc419;
+
+  --color-surface: #0f1729;
+  --color-surface-light: #1a2744;
+  --color-surface-lighter: #243352;
+  --color-glass: rgba(26, 39, 68, 0.65);
+  --color-glass-border: rgba(116, 143, 252, 0.15);
+  --color-text-primary: #e8ecf4;
+  --color-text-secondary: #8b9cc7;
+  --color-text-muted: #5a6d9a;
+}
+
+/* ── Base Styles ──────────────────────────────────────────────── */
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-glass-border);
+    border-radius: 3px;
+  }
+}
+
+/* ── Glass Card Component ─────────────────────────────────────── */
+@layer components {
+  .glass-card {
+    background: var(--color-glass);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--color-glass-border);
+    border-radius: 16px;
+    transition: all 0.3s ease;
+  }
+
+  .glass-card:hover {
+    border-color: rgba(116, 143, 252, 0.3);
+    box-shadow: 0 8px 32px rgba(92, 124, 250, 0.08);
+  }
+
+  .glass-sidebar {
+    background: rgba(15, 23, 41, 0.85);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-right: 1px solid var(--color-glass-border);
+  }
+
+  .glow-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    animation: glow-pulse 2s ease-in-out infinite;
+  }
+
+  .glow-dot-online {
+    background: var(--color-emerald-400);
+    box-shadow: 0 0 8px var(--color-emerald-400);
+  }
+
+  .glow-dot-offline {
+    background: var(--color-coral-400);
+    box-shadow: 0 0 8px var(--color-coral-400);
+  }
+
+  .tag-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 12px;
+    border-radius: 99px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    background: rgba(92, 124, 250, 0.12);
+    color: var(--color-lilo-300);
+    border: 1px solid rgba(92, 124, 250, 0.2);
+    transition: all 0.2s ease;
+  }
+
+  .tag-badge:hover {
+    background: rgba(255, 107, 107, 0.15);
+    color: var(--color-coral-400);
+    border-color: rgba(255, 107, 107, 0.3);
+  }
+
+  .btn-primary {
+    padding: 10px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border: none;
+    cursor: pointer;
+    background: linear-gradient(135deg, var(--color-lilo-600), var(--color-lilo-700));
+    color: white;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 16px rgba(76, 110, 245, 0.3);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 24px rgba(76, 110, 245, 0.4);
+  }
+
+  .btn-primary:active {
+    transform: translateY(0);
+  }
+}
+
+/* ── Animations ───────────────────────────────────────────────── */
+@keyframes glow-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-in {
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease forwards;
+}
+
+.animate-slide-in {
+  animation: slide-in 0.3s ease forwards;
+}

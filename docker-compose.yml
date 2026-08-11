@@ -1,0 +1,20 @@
+services:
+  backend:
+    build: ./lilo-backend
+    container_name: lilo_backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./lilo-backend/.env
+    restart: unless-stopped
+    volumes:
+      - ./lilo-backend/lilo_parent.db:/app/lilo_parent.db
+
+  frontend:
+    build: ./lilo-frontend
+    container_name: lilo_frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
