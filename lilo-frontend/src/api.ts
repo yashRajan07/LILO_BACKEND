@@ -68,6 +68,7 @@ export async function updateSchedules(data: {
   quiet_end?: string;
   weekday_enabled?: boolean;
   weekend_enabled?: boolean;
+  daily_limit_minutes?: number;
 }) {
   const res = await fetch(`${API_BASE}/schedules`, {
     method: 'POST',

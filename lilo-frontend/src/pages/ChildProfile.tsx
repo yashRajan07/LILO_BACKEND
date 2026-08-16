@@ -5,21 +5,27 @@ import { UserRound, Save, Check } from 'lucide-react';
 const HINGLISH_OPTIONS = [
   {
     value: 'english_only',
-    label: 'Pure English',
-    desc: 'No Hindi or Hinglish words',
+    label: 'English',
+    desc: 'Pure English only',
     emoji: '🇬🇧',
   },
   {
+    value: 'hindi_only',
+    label: 'Hindi',
+    desc: 'Pure Hindi language',
+    emoji: '🇮🇳',
+  },
+  {
     value: 'moderate_hinglish',
-    label: 'Soft Hinglish',
-    desc: 'Occasional dost, masti, waah...',
+    label: 'Hinglish (Soft)',
+    desc: 'Simple English with dost, masti, waah...',
     emoji: '🤝',
   },
   {
     value: 'high_hinglish',
-    label: 'Full Hinglish',
+    label: 'Hinglish (Full)',
     desc: 'Rich mix of English & Hindi',
-    emoji: '🇮🇳',
+    emoji: '🎭',
   },
 ];
 
@@ -100,23 +106,23 @@ export default function ChildProfile() {
             <input
               type="range"
               min={5}
-              max={10}
+              max={15}
               value={age}
               onChange={(e) => setAge(Number(e.target.value))}
               className="w-full h-2 rounded-full appearance-none cursor-pointer
                          [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-lilo-500 [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:shadow-lilo-500/30 [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-lilo-300
                          [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-lilo-500 [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-lilo-300"
               style={{
-                background: `linear-gradient(90deg, #4c6ef5 ${((age - 5) / 5) * 100}%, #243352 ${((age - 5) / 5) * 100}%)`,
+                background: `linear-gradient(90deg, #4c6ef5 ${((age - 5) / 10) * 100}%, #243352 ${((age - 5) / 10) * 100}%)`,
               }}
             />
             <div className="flex justify-between text-xs text-text-muted mt-1">
               <span>5 yrs</span>
-              <span>6</span>
               <span>7</span>
-              <span>8</span>
               <span>9</span>
-              <span>10 yrs</span>
+              <span>11</span>
+              <span>13</span>
+              <span>15 yrs</span>
             </div>
           </div>
 

@@ -26,8 +26,8 @@ router = APIRouter(prefix="/api/parent", tags=["Parent Portal"])
 
 class ChildProfileUpdate(BaseModel):
     child_name: Optional[str] = None
-    age: Optional[int] = Field(None, ge=5, le=10)
-    hinglish_ratio: Optional[str] = Field(None, pattern=r"^(english_only|moderate_hinglish|high_hinglish)$")
+    age: Optional[int] = Field(None, ge=5, le=15)
+    hinglish_ratio: Optional[str] = Field(None, pattern=r"^(english_only|hindi_only|moderate_hinglish|high_hinglish)$")
 
 
 class LearningControlsUpdate(BaseModel):
@@ -41,6 +41,7 @@ class SchedulesUpdate(BaseModel):
     quiet_end: Optional[str] = Field(None, pattern=r"^\d{2}:\d{2}$")
     weekday_enabled: Optional[bool] = None
     weekend_enabled: Optional[bool] = None
+    daily_limit_minutes: Optional[int] = Field(None, ge=15, le=300)
 
 
 # ── Dashboard ─────────────────────────────────────────────────────
@@ -63,7 +64,7 @@ async def dashboard():
         "screen_time": {
             "today_seconds": daily_seconds,
             "today_minutes": round(daily_seconds / 60, 1),
-            "daily_limit_minutes": 60,
+            "daily_limit_minutes": schedules.get("daily_limit_minutes", 60),
             "weekly": weekly,
         },
         "child_name": profile.get("child_name", "Buddy"),
@@ -142,6 +143,7 @@ async def post_schedule(data: SchedulesUpdate):
         quiet_end=data.quiet_end,
         weekday_enabled=data.weekday_enabled,
         weekend_enabled=data.weekend_enabled,
+        daily_limit_minutes=data.daily_limit_minutes,
     )
     logger.info(f"Schedules updated: {updated}")
     return {

@@ -40,9 +40,9 @@ def init_db():
             CREATE TABLE IF NOT EXISTS child_profile (
                 id INTEGER PRIMARY KEY CHECK (id = 1),
                 child_name TEXT NOT NULL DEFAULT 'Buddy',
-                age INTEGER NOT NULL DEFAULT 7 CHECK (age BETWEEN 5 AND 10),
+                age INTEGER NOT NULL DEFAULT 7 CHECK (age BETWEEN 5 AND 15),
                 hinglish_ratio TEXT NOT NULL DEFAULT 'moderate_hinglish'
-                    CHECK (hinglish_ratio IN ('english_only', 'moderate_hinglish', 'high_hinglish'))
+                    CHECK (hinglish_ratio IN ('english_only', 'hindi_only', 'moderate_hinglish', 'high_hinglish'))
             );
 
             CREATE TABLE IF NOT EXISTS learning_controls (
@@ -57,7 +57,8 @@ def init_db():
                 quiet_start TEXT NOT NULL DEFAULT '20:00',
                 quiet_end TEXT NOT NULL DEFAULT '07:00',
                 weekday_enabled INTEGER NOT NULL DEFAULT 1,
-                weekend_enabled INTEGER NOT NULL DEFAULT 0
+                weekend_enabled INTEGER NOT NULL DEFAULT 0,
+                daily_limit_minutes INTEGER NOT NULL DEFAULT 60
             );
 
             CREATE TABLE IF NOT EXISTS device_status (
@@ -87,6 +88,11 @@ def init_db():
             INSERT OR IGNORE INTO schedules (id) VALUES (1);
             INSERT OR IGNORE INTO device_status (id) VALUES (1);
         """)
+        # Dynamic schema migration check for daily_limit_minutes
+        try:
+            conn.execute("ALTER TABLE schedules ADD COLUMN daily_limit_minutes INTEGER NOT NULL DEFAULT 60")
+        except sqlite3.OperationalError:
+            pass  # Column already exists
     logger.info(f"LILO Parent DB initialized at {DB_PATH}")
 
 
@@ -158,6 +164,7 @@ def update_schedules(
     quiet_end: str = None,
     weekday_enabled: bool = None,
     weekend_enabled: bool = None,
+    daily_limit_minutes: int = None,
 ) -> dict:
     updates, params = [], []
     if quiet_hours_enabled is not None:
@@ -175,6 +182,9 @@ def update_schedules(
     if weekend_enabled is not None:
         updates.append("weekend_enabled = ?")
         params.append(int(weekend_enabled))
+    if daily_limit_minutes is not None:
+        updates.append("daily_limit_minutes = ?")
+        params.append(int(daily_limit_minutes))
     if not updates:
         return get_schedules()
     with get_db() as conn:

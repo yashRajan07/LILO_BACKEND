@@ -8,6 +8,7 @@ export default function Schedules() {
   const [end, setEnd] = useState('07:00');
   const [weekday, setWeekday] = useState(true);
   const [weekend, setWeekend] = useState(false);
+  const [dailyLimit, setDailyLimit] = useState(60);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -20,6 +21,7 @@ export default function Schedules() {
         setEnd(data.quiet_end || '07:00');
         setWeekday(data.weekday_enabled ?? true);
         setWeekend(data.weekend_enabled ?? false);
+        setDailyLimit(data.daily_limit_minutes || 60);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -35,6 +37,7 @@ export default function Schedules() {
         quiet_end: end,
         weekday_enabled: weekday,
         weekend_enabled: weekend,
+        daily_limit_minutes: dailyLimit,
       });
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
@@ -62,6 +65,27 @@ export default function Schedules() {
           Schedules & Bedtime
         </h1>
         <p className="text-text-secondary mt-1">Control when LILO is available to chat</p>
+      </div>
+
+      {/* Daily Usage Limit Card */}
+      <div className="glass-card p-6 mb-6">
+        <h2 className="text-lg font-semibold text-text-primary mb-1">Daily Usage Limit</h2>
+        <p className="text-sm text-text-muted mb-4">Set the maximum daily interaction time allowed for your child</p>
+        <div className="grid grid-cols-5 gap-3">
+          {[30, 45, 60, 90, 120].map((mins) => (
+            <button
+              key={mins}
+              onClick={() => setDailyLimit(mins)}
+              className={`py-3 px-4 rounded-xl border text-center font-semibold text-sm transition-all duration-200 ${
+                dailyLimit === mins
+                  ? 'bg-lilo-600 border-lilo-500 text-white shadow-lg shadow-lilo-600/30 scale-102'
+                  : 'bg-surface-lighter/40 border-glass-border text-text-secondary hover:border-lilo-600/30 hover:text-text-primary'
+              }`}
+            >
+              {mins} min
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

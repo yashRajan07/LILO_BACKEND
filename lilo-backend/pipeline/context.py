@@ -53,6 +53,7 @@ def _build_dynamic_system_prompt() -> str:
 
     hinglish_instruction = {
         "english_only": "Speak in pure English only. Do not use any Hinglish or Hindi words.",
+        "hindi_only": "Speak in clear, friendly Hindi. Respond primarily in Hindi language.",
         "moderate_hinglish": "Use simple English with occasional phonetic Hinglish words (e.g., dost, masti, waah, chalo).",
         "high_hinglish": "Use a rich mix of English and Hinglish throughout your responses. Freely use Hindi words and phrases.",
     }.get(hinglish, "Use simple English with occasional Hinglish.")
