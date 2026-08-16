@@ -1,15 +1,27 @@
 const API_BASE = '/api/parent';
 
+// Simple in-memory cache for fast tab switching
+const cache: Record<string, { data: any; timestamp: number }> = {};
+const CACHE_TTL = 30000; // 30 seconds TTL
+
+async function fetchWithCache(url: string, forceFresh = false) {
+  const now = Date.now();
+  if (!forceFresh && cache[url] && now - cache[url].timestamp < CACHE_TTL) {
+    return cache[url].data;
+  }
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Failed to fetch ${url}`);
+  const data = await res.json();
+  cache[url] = { data, timestamp: now };
+  return data;
+}
+
 export async function fetchDashboard() {
-  const res = await fetch(`${API_BASE}/dashboard`);
-  if (!res.ok) throw new Error('Failed to fetch dashboard');
-  return res.json();
+  return fetchWithCache(`${API_BASE}/dashboard`);
 }
 
 export async function fetchProfile() {
-  const res = await fetch(`${API_BASE}/profile`);
-  if (!res.ok) throw new Error('Failed to fetch profile');
-  return res.json();
+  return fetchWithCache(`${API_BASE}/profile`);
 }
 
 export async function updateProfile(data: {
@@ -23,13 +35,13 @@ export async function updateProfile(data: {
     body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error('Failed to update profile');
+  delete cache[`${API_BASE}/profile`];
+  delete cache[`${API_BASE}/dashboard`];
   return res.json();
 }
 
 export async function fetchLearningControls() {
-  const res = await fetch(`${API_BASE}/learning-controls`);
-  if (!res.ok) throw new Error('Failed to fetch learning controls');
-  return res.json();
+  return fetchWithCache(`${API_BASE}/learning-controls`);
 }
 
 export async function updateLearningControls(data: {
@@ -42,13 +54,12 @@ export async function updateLearningControls(data: {
     body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error('Failed to update learning controls');
+  delete cache[`${API_BASE}/learning-controls`];
   return res.json();
 }
 
 export async function fetchSchedules() {
-  const res = await fetch(`${API_BASE}/schedules`);
-  if (!res.ok) throw new Error('Failed to fetch schedules');
-  return res.json();
+  return fetchWithCache(`${API_BASE}/schedules`);
 }
 
 export async function updateSchedules(data: {
@@ -64,11 +75,12 @@ export async function updateSchedules(data: {
     body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error('Failed to update schedules');
+  delete cache[`${API_BASE}/schedules`];
+  delete cache[`${API_BASE}/dashboard`];
   return res.json();
 }
 
 export async function fetchReports() {
-  const res = await fetch(`${API_BASE}/reports`);
-  if (!res.ok) throw new Error('Failed to fetch reports');
-  return res.json();
+  return fetchWithCache(`${API_BASE}/reports`);
 }
+
