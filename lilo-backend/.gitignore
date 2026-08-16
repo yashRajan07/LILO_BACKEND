@@ -8,7 +8,7 @@ venv/
 env/
 
 # Environment Variables / Secrets
-.env
+.env.local
 .env*.local
 
 # IDEs & Editors
