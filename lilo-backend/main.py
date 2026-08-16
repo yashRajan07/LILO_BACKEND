@@ -31,9 +31,9 @@ if sys.platform == "win32":
 
     try:
         ctypes.windll.winmm.timeBeginPeriod(1)
-        print("⚡ System: Windows clock precision successfully scaled to 1ms interval.")
+        print("System: Windows clock precision successfully scaled to 1ms interval.")
     except Exception as e:
-        print(f"⚠️ System: Failed to set Windows timer resolution: {e}")
+        print(f"System: Failed to set Windows timer resolution: {e}")
 
 import logging
 

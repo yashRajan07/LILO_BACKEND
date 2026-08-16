@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { fetchSchedules, updateSchedules } from '../api';
-import { Clock, Moon, Sun, Save, Check } from 'lucide-react';
+import { Clock, Moon, Sun, Save, Check, Calendar } from 'lucide-react';
 
 export default function Schedules() {
-  const [enabled, setEnabled] = useState(false);
+  const [enabled, setEnabled] = useState(true);
   const [start, setStart] = useState('20:00');
   const [end, setEnd] = useState('07:00');
   const [weekday, setWeekday] = useState(true);
@@ -16,12 +16,14 @@ export default function Schedules() {
   useEffect(() => {
     fetchSchedules()
       .then((data) => {
-        setEnabled(data.quiet_hours_enabled ?? false);
-        setStart(data.quiet_start || '20:00');
-        setEnd(data.quiet_end || '07:00');
-        setWeekday(data.weekday_enabled ?? true);
-        setWeekend(data.weekend_enabled ?? false);
-        setDailyLimit(data.daily_limit_minutes || 60);
+        if (data && Object.keys(data).length > 0) {
+          setEnabled(data.quiet_hours_enabled ?? true);
+          setStart(data.quiet_start || '20:00');
+          setEnd(data.quiet_end || '07:00');
+          setWeekday(data.weekday_enabled ?? true);
+          setWeekend(data.weekend_enabled ?? false);
+          setDailyLimit(data.daily_limit_minutes || 60);
+        }
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -41,8 +43,8 @@ export default function Schedules() {
       });
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
-    } catch {
-      // error silently
+    } catch (err) {
+      console.error('Failed to update schedules:', err);
     } finally {
       setSaving(false);
     }
@@ -51,35 +53,37 @@ export default function Schedules() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-lilo-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-[#a67957] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div>
+    <div className="space-y-6">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-text-primary flex items-center gap-3">
-          <Clock className="w-8 h-8 text-lilo-400" />
-          Schedules & Bedtime
+      <div className="mb-2">
+        <h1 className="text-3xl font-bold text-[#231c18] flex items-center gap-3 tracking-tight">
+          <Clock className="w-8 h-8 text-[#7c5839]" />
+          Schedules & Quiet Hours
         </h1>
-        <p className="text-text-secondary mt-1">Control when LILO is available to chat</p>
+        <p className="text-sm font-medium text-[#76685c] mt-1">
+          Control daily allowed usage and set bedtime lock hours for LILO
+        </p>
       </div>
 
       {/* Daily Usage Limit Card */}
-      <div className="glass-card p-6 mb-6">
-        <h2 className="text-lg font-semibold text-text-primary mb-1">Daily Usage Limit</h2>
-        <p className="text-sm text-text-muted mb-4">Set the maximum daily interaction time allowed for your child</p>
+      <div className="card-light p-6">
+        <h2 className="text-lg font-bold text-[#231c18] mb-1">Daily Usage Limit</h2>
+        <p className="text-xs text-[#76685c] mb-4">Set the maximum daily interaction time allowed for Aarav</p>
         <div className="grid grid-cols-5 gap-3">
           {[30, 45, 60, 90, 120].map((mins) => (
             <button
               key={mins}
               onClick={() => setDailyLimit(mins)}
-              className={`py-3 px-4 rounded-xl border text-center font-semibold text-sm transition-all duration-200 ${
+              className={`py-2.5 px-4 rounded-xl border text-center font-bold text-sm transition-all duration-200 ${
                 dailyLimit === mins
-                  ? 'bg-lilo-600 border-lilo-500 text-white shadow-lg shadow-lilo-600/30 scale-102'
-                  : 'bg-surface-lighter/40 border-glass-border text-text-secondary hover:border-lilo-600/30 hover:text-text-primary'
+                  ? 'bg-[#7c5839] border-[#61432a] text-white shadow-md'
+                  : 'bg-[#f6eee4] border-[rgba(196,164,130,0.3)] text-[#6e5f52] hover:border-[#a67957]'
               }`}
             >
               {mins} min
@@ -90,17 +94,17 @@ export default function Schedules() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Bedtime Lock Toggle Card */}
-        <div className="glass-card p-6">
+        <div className="card-light p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-lg font-semibold text-text-primary">Bedtime Lock</h2>
-              <p className="text-sm text-text-muted mt-1">LILO will stop responding during quiet hours</p>
+              <h2 className="text-lg font-bold text-[#231c18]">Bedtime Quiet Hours</h2>
+              <p className="text-xs text-[#76685c] mt-0.5">LILO will go to sleep and stop responding during quiet hours</p>
             </div>
             {/* Toggle Switch */}
             <button
               onClick={() => setEnabled(!enabled)}
               className={`relative w-14 h-7 rounded-full transition-all duration-300 ${
-                enabled ? 'bg-lilo-600' : 'bg-surface-lighter'
+                enabled ? 'bg-[#7c5839]' : 'bg-[#e2d5c4]'
               }`}
             >
               <div
@@ -109,9 +113,9 @@ export default function Schedules() {
                 }`}
               >
                 {enabled ? (
-                  <Moon className="w-3.5 h-3.5 text-lilo-700" />
+                  <Moon className="w-3.5 h-3.5 text-[#7c5839]" />
                 ) : (
-                  <Sun className="w-3.5 h-3.5 text-text-muted" />
+                  <Sun className="w-3.5 h-3.5 text-[#76685c]" />
                 )}
               </div>
             </button>
@@ -121,103 +125,103 @@ export default function Schedules() {
           <div className={`space-y-5 transition-opacity duration-300 ${enabled ? 'opacity-100' : 'opacity-40 pointer-events-none'}`}>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-text-secondary mb-2">
-                  <Moon className="inline w-3.5 h-3.5 mr-1.5 text-lilo-400" />
+                <label className="block text-xs font-semibold text-[#6e5f52] mb-2 uppercase">
+                  <Moon className="inline w-3.5 h-3.5 mr-1.5 text-[#7c5839]" />
                   Quiet Starts
                 </label>
                 <input
                   type="time"
                   value={start}
                   onChange={(e) => setStart(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-surface-lighter border border-glass-border text-text-primary focus:outline-none focus:border-lilo-500 focus:ring-1 focus:ring-lilo-500/30 transition-all"
+                  className="w-full px-4 py-2.5 rounded-xl bg-[#f6eee4] border border-[rgba(196,164,130,0.4)] text-[#231c18] font-semibold text-sm focus:outline-none focus:border-[#7c5839]"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-text-secondary mb-2">
-                  <Sun className="inline w-3.5 h-3.5 mr-1.5 text-amber-400" />
+                <label className="block text-xs font-semibold text-[#6e5f52] mb-2 uppercase">
+                  <Sun className="inline w-3.5 h-3.5 mr-1.5 text-[#e3a54b]" />
                   Quiet Ends
                 </label>
                 <input
                   type="time"
                   value={end}
                   onChange={(e) => setEnd(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-surface-lighter border border-glass-border text-text-primary focus:outline-none focus:border-lilo-500 focus:ring-1 focus:ring-lilo-500/30 transition-all"
+                  className="w-full px-4 py-2.5 rounded-xl bg-[#f6eee4] border border-[rgba(196,164,130,0.4)] text-[#231c18] font-semibold text-sm focus:outline-none focus:border-[#7c5839]"
                 />
               </div>
             </div>
 
             {/* Preview */}
-            <div className="p-4 rounded-xl bg-surface/60 border border-glass-border">
-              <p className="text-sm text-text-muted">
-                🌙 LILO will be unavailable from{' '}
-                <span className="text-lilo-300 font-semibold">{start}</span> to{' '}
-                <span className="text-amber-400 font-semibold">{end}</span>
+            <div className="p-4 rounded-xl bg-[#e6dbcd]/80 border border-[rgba(196,164,130,0.3)]">
+              <p className="text-xs text-[#6e5f52] leading-relaxed">
+                🌙 LILO will be sleeping from{' '}
+                <span className="text-[#231c18] font-bold">{start}</span> to{' '}
+                <span className="text-[#8c5711] font-bold">{end}</span>
               </p>
             </div>
           </div>
         </div>
 
         {/* Day Rules Card */}
-        <div className="glass-card p-6">
-          <h2 className="text-lg font-semibold text-text-primary mb-2">Day Rules</h2>
-          <p className="text-sm text-text-muted mb-5">Which days should the bedtime lock apply?</p>
+        <div className="card-light p-6">
+          <h2 className="text-lg font-bold text-[#231c18] mb-1">Active Days</h2>
+          <p className="text-xs text-[#76685c] mb-5">Which days should quiet hours apply?</p>
 
           <div className={`space-y-3 transition-opacity duration-300 ${enabled ? 'opacity-100' : 'opacity-40 pointer-events-none'}`}>
             {/* Weekday Toggle */}
             <button
               onClick={() => setWeekday(!weekday)}
-              className={`w-full flex items-center justify-between p-4 rounded-xl border transition-all duration-200 ${
+              className={`w-full flex items-center justify-between p-3.5 rounded-xl border transition-all duration-200 ${
                 weekday
-                  ? 'bg-lilo-600/15 border-lilo-500/40'
-                  : 'bg-surface-lighter/30 border-glass-border hover:border-lilo-600/20'
+                  ? 'bg-[#e5d8c8] border-[#a67957] shadow-sm'
+                  : 'bg-[#f6eee4] border-[rgba(196,164,130,0.25)] hover:border-[#a67957]/50'
               }`}
             >
               <div className="flex items-center gap-3">
-                <span className="text-2xl">📅</span>
+                <Calendar className="w-5 h-5 text-[#7c5839]" />
                 <div className="text-left">
-                  <p className="text-sm font-semibold text-text-primary">Weekdays</p>
-                  <p className="text-xs text-text-muted">Monday — Friday</p>
+                  <p className="text-sm font-bold text-[#231c18]">Weekdays</p>
+                  <p className="text-xs text-[#76685c]">Monday — Friday</p>
                 </div>
               </div>
               <div
                 className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${
-                  weekday ? 'bg-lilo-600 border-lilo-500' : 'border-text-muted'
+                  weekday ? 'bg-[#7c5839] border-[#61432a]' : 'border-[#978777]'
                 }`}
               >
-                {weekday && <Check className="w-3 h-3 text-white" />}
+                {weekday && <Check className="w-3.5 h-3.5 text-white" />}
               </div>
             </button>
 
             {/* Weekend Toggle */}
             <button
               onClick={() => setWeekend(!weekend)}
-              className={`w-full flex items-center justify-between p-4 rounded-xl border transition-all duration-200 ${
+              className={`w-full flex items-center justify-between p-3.5 rounded-xl border transition-all duration-200 ${
                 weekend
-                  ? 'bg-lilo-600/15 border-lilo-500/40'
-                  : 'bg-surface-lighter/30 border-glass-border hover:border-lilo-600/20'
+                  ? 'bg-[#e5d8c8] border-[#a67957] shadow-sm'
+                  : 'bg-[#f6eee4] border-[rgba(196,164,130,0.25)] hover:border-[#a67957]/50'
               }`}
             >
               <div className="flex items-center gap-3">
-                <span className="text-2xl">🎉</span>
+                <Calendar className="w-5 h-5 text-[#a67957]" />
                 <div className="text-left">
-                  <p className="text-sm font-semibold text-text-primary">Weekends</p>
-                  <p className="text-xs text-text-muted">Saturday — Sunday</p>
+                  <p className="text-sm font-bold text-[#231c18]">Weekends</p>
+                  <p className="text-xs text-[#76685c]">Saturday — Sunday</p>
                 </div>
               </div>
               <div
                 className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${
-                  weekend ? 'bg-lilo-600 border-lilo-500' : 'border-text-muted'
+                  weekend ? 'bg-[#7c5839] border-[#61432a]' : 'border-[#978777]'
                 }`}
               >
-                {weekend && <Check className="w-3 h-3 text-white" />}
+                {weekend && <Check className="w-3.5 h-3.5 text-white" />}
               </div>
             </button>
           </div>
 
           {/* Connection Behavior Info */}
-          <div className="mt-6 p-4 rounded-xl bg-surface/60 border border-glass-border">
-            <p className="text-xs text-text-muted">
-              🔒 During quiet hours, if the ESP32 tries to connect, LILO will respond with:
+          <div className="mt-6 p-4 rounded-xl bg-[#e6dbcd]/80 border border-[rgba(196,164,130,0.3)]">
+            <p className="text-xs text-[#6e5f52] leading-relaxed">
+              🔒 During quiet hours, LILO will gently say:
               "It's bedtime! LILO is sleeping now. Come back tomorrow morning!"
             </p>
           </div>
@@ -226,10 +230,10 @@ export default function Schedules() {
 
       {/* Save Button */}
       <div className="mt-6 flex justify-end">
-        <button onClick={handleSave} disabled={saving} className="btn-primary flex items-center gap-2">
+        <button onClick={handleSave} disabled={saving} className="btn-primary flex items-center gap-2 px-6 py-3 text-sm">
           {saved ? (
             <>
-              <Check className="w-4 h-4" /> Saved!
+              <Check className="w-4 h-4 text-emerald-300" /> Saved Schedule!
             </>
           ) : saving ? (
             <>
@@ -245,3 +249,4 @@ export default function Schedules() {
     </div>
   );
 }
+

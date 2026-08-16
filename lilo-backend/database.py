@@ -34,12 +34,12 @@ def get_db():
 
 
 def init_db():
-    """Create all tables and seed defaults if they don't exist."""
+    """Create all tables and seed defaults with rich dummy data if empty."""
     with get_db() as conn:
         conn.executescript("""
             CREATE TABLE IF NOT EXISTS child_profile (
                 id INTEGER PRIMARY KEY CHECK (id = 1),
-                child_name TEXT NOT NULL DEFAULT 'Buddy',
+                child_name TEXT NOT NULL DEFAULT 'Aarav',
                 age INTEGER NOT NULL DEFAULT 7 CHECK (age BETWEEN 5 AND 15),
                 hinglish_ratio TEXT NOT NULL DEFAULT 'moderate_hinglish'
                     CHECK (hinglish_ratio IN ('english_only', 'hindi_only', 'moderate_hinglish', 'high_hinglish'))
@@ -48,12 +48,12 @@ def init_db():
             CREATE TABLE IF NOT EXISTS learning_controls (
                 id INTEGER PRIMARY KEY CHECK (id = 1),
                 target_topics TEXT NOT NULL DEFAULT '["science_space","indian_culture","math_riddles","moral_stories","animals_nature"]',
-                banned_topics TEXT NOT NULL DEFAULT '[]'
+                banned_topics TEXT NOT NULL DEFAULT '["scary stories","monsters"]'
             );
 
             CREATE TABLE IF NOT EXISTS schedules (
                 id INTEGER PRIMARY KEY CHECK (id = 1),
-                quiet_hours_enabled INTEGER NOT NULL DEFAULT 0,
+                quiet_hours_enabled INTEGER NOT NULL DEFAULT 1,
                 quiet_start TEXT NOT NULL DEFAULT '20:00',
                 quiet_end TEXT NOT NULL DEFAULT '07:00',
                 weekday_enabled INTEGER NOT NULL DEFAULT 1,
@@ -63,9 +63,9 @@ def init_db():
 
             CREATE TABLE IF NOT EXISTS device_status (
                 id INTEGER PRIMARY KEY CHECK (id = 1),
-                is_online INTEGER NOT NULL DEFAULT 0,
+                is_online INTEGER NOT NULL DEFAULT 1,
                 last_connected_at TEXT,
-                ip_address TEXT
+                ip_address TEXT DEFAULT '192.168.1.104'
             );
 
             CREATE TABLE IF NOT EXISTS usage_logs (
@@ -82,18 +82,60 @@ def init_db():
                 logged_at TEXT NOT NULL DEFAULT (datetime('now'))
             );
 
-            -- Seed defaults (INSERT OR IGNORE ensures one-time only)
-            INSERT OR IGNORE INTO child_profile (id) VALUES (1);
-            INSERT OR IGNORE INTO learning_controls (id) VALUES (1);
-            INSERT OR IGNORE INTO schedules (id) VALUES (1);
-            INSERT OR IGNORE INTO device_status (id) VALUES (1);
+            -- Seed base tables (INSERT OR IGNORE ensures one-time only)
+            INSERT OR IGNORE INTO child_profile (id, child_name, age, hinglish_ratio)
+            VALUES (1, 'Aarav', 7, 'moderate_hinglish');
+
+            INSERT OR IGNORE INTO learning_controls (id, target_topics, banned_topics)
+            VALUES (1, '["science_space","indian_culture","math_riddles","moral_stories","animals_nature"]', '["scary stories","monsters"]');
+
+            INSERT OR IGNORE INTO schedules (id, quiet_hours_enabled, quiet_start, quiet_end, weekday_enabled, weekend_enabled, daily_limit_minutes)
+            VALUES (1, 1, '20:00', '07:00', 1, 0, 60);
+
+            INSERT OR IGNORE INTO device_status (id, is_online, last_connected_at, ip_address)
+            VALUES (1, 1, datetime('now'), '192.168.1.104');
         """)
+        
         # Dynamic schema migration check for daily_limit_minutes
         try:
             conn.execute("ALTER TABLE schedules ADD COLUMN daily_limit_minutes INTEGER NOT NULL DEFAULT 60")
         except sqlite3.OperationalError:
             pass  # Column already exists
-    logger.info(f"LILO Parent DB initialized at {DB_PATH}")
+
+        # Seed rich dummy usage logs for the past 7 days if usage_logs is empty
+        count_usage = conn.execute("SELECT COUNT(*) FROM usage_logs").fetchone()[0]
+        if count_usage == 0:
+            dummy_minutes = [35, 45, 52, 28, 60, 42, 38]
+            for idx, mins in enumerate(dummy_minutes):
+                conn.execute(
+                    "INSERT INTO usage_logs (session_date, duration_seconds) VALUES (date('now', ?), ?)",
+                    (f"-{6 - idx} days", mins * 60)
+                )
+
+        # Seed rich dummy curiosity topic logs if topic_logs is empty
+        count_topics = conn.execute("SELECT COUNT(*) FROM topic_logs").fetchone()[0]
+        if count_topics == 0:
+            sample_questions = [
+                ("science_space", "Why do stars twinkle at night in space?"),
+                ("animals_nature", "How do peacocks open their colorful feathers so wide?"),
+                ("indian_culture", "Why is Hanuman called Pawan Putra in ancient stories?"),
+                ("math_riddles", "If I have 3 apples and share with 2 best friends, how many do we each get?"),
+                ("moral_stories", "Why is telling the truth always important in stories?"),
+                ("animals_nature", "Can trees communicate with each other under the ground?"),
+                ("science_space", "How fast does sun light travel from the Sun to Earth?"),
+                ("science_space", "What causes rainbows to appear after rain?"),
+                ("animals_nature", "Why do dolphins jump out of the water?"),
+                ("math_riddles", "What number comes next in 2, 4, 6, 8?"),
+                ("indian_culture", "What is the story of Diwali lamps?"),
+                ("moral_stories", "What is the lesson of the tortoise and the hare?"),
+            ]
+            for topic, q in sample_questions:
+                conn.execute(
+                    "INSERT INTO topic_logs (topic, question, logged_at) VALUES (?, ?, datetime('now', '-1 hours'))",
+                    (topic, q)
+                )
+
+    logger.info(f"LILO Parent DB initialized with dummy data at {DB_PATH}")
 
 
 # ── Child Profile ─────────────────────────────────────────────────
@@ -250,7 +292,7 @@ def log_session_duration(duration_seconds: float):
 
 
 def get_daily_screen_time(target_date: str = None) -> float:
-    """Returns total screen time in seconds for a given date (defaults to today)."""
+    """Returns total usage time in seconds for a given date (defaults to today)."""
     target = target_date or date.today().isoformat()
     with get_db() as conn:
         row = conn.execute(
@@ -259,9 +301,11 @@ def get_daily_screen_time(target_date: str = None) -> float:
         ).fetchone()
         return row["total"] if row else 0.0
 
+get_daily_usage_time = get_daily_screen_time
+
 
 def get_weekly_screen_time() -> list:
-    """Returns screen time for the past 7 days as a list of {date, total_seconds}."""
+    """Returns usage time for the past 7 days as a list of {date, total_seconds}."""
     with get_db() as conn:
         rows = conn.execute("""
             SELECT session_date, COALESCE(SUM(duration_seconds), 0) as total_seconds
@@ -271,6 +315,8 @@ def get_weekly_screen_time() -> list:
             ORDER BY session_date
         """).fetchall()
         return [dict(r) for r in rows]
+
+get_weekly_usage_time = get_weekly_screen_time
 
 
 # ── Topic Logs ────────────────────────────────────────────────────

@@ -48,12 +48,19 @@ class SchedulesUpdate(BaseModel):
 
 @router.get("/dashboard")
 async def dashboard():
-    """Returns live device status, daily screen time, and weekly trends."""
+    """Returns live device status, daily usage time, and weekly trends."""
     device = get_device_status()
     daily_seconds = get_daily_screen_time()
     weekly = get_weekly_screen_time()
     profile = get_child_profile()
     schedules = get_schedules()
+
+    usage_data = {
+        "today_seconds": daily_seconds,
+        "today_minutes": round(daily_seconds / 60, 1),
+        "daily_limit_minutes": schedules.get("daily_limit_minutes", 60),
+        "weekly": weekly,
+    }
 
     return {
         "device": {
@@ -61,13 +68,9 @@ async def dashboard():
             "last_connected_at": device.get("last_connected_at"),
             "ip_address": device.get("ip_address"),
         },
-        "screen_time": {
-            "today_seconds": daily_seconds,
-            "today_minutes": round(daily_seconds / 60, 1),
-            "daily_limit_minutes": schedules.get("daily_limit_minutes", 60),
-            "weekly": weekly,
-        },
-        "child_name": profile.get("child_name", "Buddy"),
+        "usage_time": usage_data,
+        "screen_time": usage_data,
+        "child_name": profile.get("child_name", "Aarav"),
         "quiet_hours_enabled": bool(schedules.get("quiet_hours_enabled", 0)),
     }
 
@@ -159,8 +162,10 @@ async def post_schedule(data: SchedulesUpdate):
 @router.get("/reports")
 async def get_reports():
     """Returns weekly topic distribution and curiosity highlights for analytics."""
+    weekly = get_weekly_screen_time()
     return {
         "topic_distribution": get_weekly_topic_distribution(),
         "curiosity_highlights": get_curiosity_highlights(limit=10),
-        "weekly_screen_time": get_weekly_screen_time(),
+        "weekly_usage_time": weekly,
+        "weekly_screen_time": weekly,
     }

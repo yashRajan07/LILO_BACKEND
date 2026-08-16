@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { fetchProfile, updateProfile } from '../api';
-import { UserRound, Save, Check } from 'lucide-react';
+import { UserRound, Save, Check, Sparkles } from 'lucide-react';
 
 const HINGLISH_OPTIONS = [
   {
@@ -30,7 +30,7 @@ const HINGLISH_OPTIONS = [
 ];
 
 export default function ChildProfile() {
-  const [name, setName] = useState('');
+  const [name, setName] = useState('Aarav');
   const [age, setAge] = useState(7);
   const [hinglish, setHinglish] = useState('moderate_hinglish');
   const [loading, setLoading] = useState(true);
@@ -40,9 +40,11 @@ export default function ChildProfile() {
   useEffect(() => {
     fetchProfile()
       .then((data) => {
-        setName(data.child_name || '');
-        setAge(data.age || 7);
-        setHinglish(data.hinglish_ratio || 'moderate_hinglish');
+        if (data) {
+          setName(data.child_name || 'Aarav');
+          setAge(data.age || 7);
+          setHinglish(data.hinglish_ratio || 'moderate_hinglish');
+        }
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -65,43 +67,45 @@ export default function ChildProfile() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-lilo-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-[#a67957] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div>
+    <div className="space-y-6">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-text-primary flex items-center gap-3">
-          <UserRound className="w-8 h-8 text-lilo-400" />
+      <div className="mb-2">
+        <h1 className="text-3xl font-bold text-[#231c18] flex items-center gap-3 tracking-tight">
+          <UserRound className="w-8 h-8 text-[#7c5839]" />
           Child Profile
         </h1>
-        <p className="text-text-secondary mt-1">Customize LILO's personality for your child</p>
+        <p className="text-sm font-medium text-[#76685c] mt-1">
+          Customize LILO's persona, age appropriateness, and speaking language
+        </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Name & Age Card */}
-        <div className="glass-card p-6">
-          <h2 className="text-lg font-semibold text-text-primary mb-5">Basic Information</h2>
+        <div className="card-light p-6">
+          <h2 className="text-lg font-bold text-[#231c18] mb-5">Basic Information</h2>
 
           {/* Name Input */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-text-secondary mb-2">Child's Name</label>
+            <label className="block text-xs font-semibold text-[#6e5f52] uppercase mb-2">Child's Name</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Enter child's name"
-              className="w-full px-4 py-3 rounded-xl bg-surface-lighter border border-glass-border text-text-primary placeholder-text-muted focus:outline-none focus:border-lilo-500 focus:ring-1 focus:ring-lilo-500/30 transition-all"
+              className="w-full px-4 py-2.5 rounded-xl bg-[#f6eee4] border border-[rgba(196,164,130,0.4)] text-[#231c18] placeholder-[#978777] focus:outline-none focus:border-[#7c5839] focus:ring-1 focus:ring-[#7c5839]/30 text-sm font-semibold"
             />
           </div>
 
           {/* Age Slider */}
-          <div>
-            <label className="block text-sm font-medium text-text-secondary mb-2">
-              Age: <span className="text-lilo-300 font-bold text-lg">{age}</span> years old
+          <div className="mb-6">
+            <label className="block text-xs font-semibold text-[#6e5f52] uppercase mb-2">
+              Age: <span className="text-[#7c5839] font-bold text-base">{age} years old</span>
             </label>
             <input
               type="range"
@@ -109,14 +113,9 @@ export default function ChildProfile() {
               max={15}
               value={age}
               onChange={(e) => setAge(Number(e.target.value))}
-              className="w-full h-2 rounded-full appearance-none cursor-pointer
-                         [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-lilo-500 [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:shadow-lilo-500/30 [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-lilo-300
-                         [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-lilo-500 [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-lilo-300"
-              style={{
-                background: `linear-gradient(90deg, #4c6ef5 ${((age - 5) / 10) * 100}%, #243352 ${((age - 5) / 10) * 100}%)`,
-              }}
+              className="w-full h-2 rounded-full appearance-none cursor-pointer bg-[#e2d5c4] accent-[#7c5839]"
             />
-            <div className="flex justify-between text-xs text-text-muted mt-1">
+            <div className="flex justify-between text-xs text-[#76685c] mt-1.5 font-medium">
               <span>5 yrs</span>
               <span>7</span>
               <span>9</span>
@@ -127,45 +126,42 @@ export default function ChildProfile() {
           </div>
 
           {/* Persona Preview */}
-          <div className="mt-6 p-4 rounded-xl bg-surface/60 border border-glass-border">
-            <p className="text-sm text-text-muted">
-              🧸 LILO will talk like a warm best friend suited for a{' '}
-              <span className="text-lilo-300 font-semibold">{age}-year-old</span>
-              {name && (
-                <>
-                  , calling them <span className="text-amber-400 font-semibold">{name}</span>
-                </>
-              )}
+          <div className="p-4 rounded-xl bg-[#e6dbcd]/80 border border-[rgba(196,164,130,0.3)] flex items-start gap-3">
+            <Sparkles className="w-5 h-5 text-[#a67957] shrink-0 mt-0.5" />
+            <p className="text-xs text-[#6e5f52] leading-relaxed">
+              LILO will speak like a warm, supportive best friend tailored for a{' '}
+              <span className="text-[#231c18] font-bold">{age}-year-old</span>, calling them{' '}
+              <span className="text-[#8c5711] font-bold">{name}</span>!
             </p>
           </div>
         </div>
 
         {/* Hinglish Ratio Card */}
-        <div className="glass-card p-6">
-          <h2 className="text-lg font-semibold text-text-primary mb-5">Language Style</h2>
-          <p className="text-sm text-text-secondary mb-4">How much Hindi/Hinglish should LILO use?</p>
+        <div className="card-light p-6">
+          <h2 className="text-lg font-bold text-[#231c18] mb-1">Language Style</h2>
+          <p className="text-xs text-[#76685c] mb-5">Select how LILO balances English & Hindi</p>
 
           <div className="space-y-3">
             {HINGLISH_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
                 onClick={() => setHinglish(opt.value)}
-                className={`w-full text-left p-4 rounded-xl border transition-all duration-200 ${
+                className={`w-full text-left p-3.5 rounded-xl border transition-all duration-200 ${
                   hinglish === opt.value
-                    ? 'bg-lilo-600/15 border-lilo-500/40 shadow-sm'
-                    : 'bg-surface-lighter/30 border-glass-border hover:border-lilo-600/20'
+                    ? 'bg-[#e5d8c8] border-[#a67957] shadow-sm'
+                    : 'bg-[#f6eee4] border-[rgba(196,164,130,0.25)] hover:border-[#a67957]/50'
                 }`}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">{opt.emoji}</span>
                     <div>
-                      <p className="font-semibold text-text-primary text-sm">{opt.label}</p>
-                      <p className="text-text-muted text-xs mt-0.5">{opt.desc}</p>
+                      <p className="font-bold text-[#231c18] text-sm">{opt.label}</p>
+                      <p className="text-[#76685c] text-xs mt-0.5 font-medium">{opt.desc}</p>
                     </div>
                   </div>
                   {hinglish === opt.value && (
-                    <div className="w-6 h-6 rounded-full bg-lilo-600 flex items-center justify-center">
+                    <div className="w-6 h-6 rounded-full bg-[#7c5839] flex items-center justify-center">
                       <Check className="w-3.5 h-3.5 text-white" />
                     </div>
                   )}
@@ -178,14 +174,10 @@ export default function ChildProfile() {
 
       {/* Save Button */}
       <div className="mt-6 flex justify-end">
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="btn-primary flex items-center gap-2"
-        >
+        <button onClick={handleSave} disabled={saving} className="btn-primary flex items-center gap-2 px-6 py-3 text-sm">
           {saved ? (
             <>
-              <Check className="w-4 h-4" /> Saved!
+              <Check className="w-4 h-4 text-emerald-300" /> Saved Profile!
             </>
           ) : saving ? (
             <>
@@ -201,3 +193,4 @@ export default function ChildProfile() {
     </div>
   );
 }
+

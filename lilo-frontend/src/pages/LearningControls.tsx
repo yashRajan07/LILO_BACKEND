@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { fetchLearningControls, updateLearningControls } from '../api';
-import { BookOpen, Save, Check, X, Plus } from 'lucide-react';
+import { BookOpen, Save, Check, X, Plus, ShieldAlert, Sparkles } from 'lucide-react';
 
 const AVAILABLE_TOPICS = [
   { id: 'science_space', label: 'Science & Space', emoji: '🚀' },
@@ -10,9 +10,18 @@ const AVAILABLE_TOPICS = [
   { id: 'animals_nature', label: 'Animals & Nature', emoji: '🦚' },
 ];
 
+const DEFAULT_TARGET_TOPICS = [
+  'science_space',
+  'indian_culture',
+  'math_riddles',
+  'moral_stories',
+  'animals_nature',
+];
+const DEFAULT_BANNED_TOPICS = ['scary stories', 'monsters', 'horror movies'];
+
 export default function LearningControls() {
-  const [targetTopics, setTargetTopics] = useState<string[]>([]);
-  const [bannedTopics, setBannedTopics] = useState<string[]>([]);
+  const [targetTopics, setTargetTopics] = useState<string[]>(DEFAULT_TARGET_TOPICS);
+  const [bannedTopics, setBannedTopics] = useState<string[]>(DEFAULT_BANNED_TOPICS);
   const [newBanned, setNewBanned] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -21,8 +30,10 @@ export default function LearningControls() {
   useEffect(() => {
     fetchLearningControls()
       .then((data) => {
-        setTargetTopics(data.target_topics || []);
-        setBannedTopics(data.banned_topics || []);
+        if (data) {
+          setTargetTopics(data.target_topics?.length ? data.target_topics : DEFAULT_TARGET_TOPICS);
+          setBannedTopics(data.banned_topics?.length ? data.banned_topics : DEFAULT_BANNED_TOPICS);
+        }
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -66,27 +77,32 @@ export default function LearningControls() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-lilo-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-[#a67957] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div>
+    <div className="space-y-6">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-text-primary flex items-center gap-3">
-          <BookOpen className="w-8 h-8 text-lilo-400" />
+      <div className="mb-2">
+        <h1 className="text-3xl font-bold text-[#231c18] flex items-center gap-3 tracking-tight">
+          <BookOpen className="w-8 h-8 text-[#7c5839]" />
           Learning Controls
         </h1>
-        <p className="text-text-secondary mt-1">Guide what LILO teaches and avoids</p>
+        <p className="text-sm font-medium text-[#76685c] mt-1">
+          Customize what topics LILO teaches and steers away from during voice interactions
+        </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Target Topics */}
-        <div className="glass-card p-6">
-          <h2 className="text-lg font-semibold text-text-primary mb-2">Focus Topics</h2>
-          <p className="text-sm text-text-muted mb-5">LILO will steer conversations toward these subjects</p>
+        <div className="card-light p-6">
+          <div className="flex items-center gap-2 mb-1">
+            <Sparkles className="w-5 h-5 text-[#a67957]" />
+            <h2 className="text-lg font-bold text-[#231c18]">Focus Topics</h2>
+          </div>
+          <p className="text-xs text-[#76685c] mb-5">LILO will steer curious questions towards these subject areas</p>
 
           <div className="space-y-3">
             {AVAILABLE_TOPICS.map((topic) => {
@@ -95,22 +111,22 @@ export default function LearningControls() {
                 <button
                   key={topic.id}
                   onClick={() => toggleTopic(topic.id)}
-                  className={`w-full flex items-center gap-3 p-4 rounded-xl border transition-all duration-200 text-left ${
+                  className={`w-full flex items-center gap-3.5 p-3.5 rounded-xl border transition-all duration-200 text-left ${
                     isSelected
-                      ? 'bg-lilo-600/15 border-lilo-500/40'
-                      : 'bg-surface-lighter/30 border-glass-border hover:border-lilo-600/20'
+                      ? 'bg-[#e5d8c8] border-[#a67957] shadow-sm'
+                      : 'bg-[#f6eee4] border-[rgba(196,164,130,0.25)] hover:border-[#a67957]/50'
                   }`}
                 >
                   <span className="text-2xl">{topic.emoji}</span>
-                  <span className="flex-1 text-sm font-medium text-text-primary">{topic.label}</span>
+                  <span className="flex-1 text-sm font-semibold text-[#231c18]">{topic.label}</span>
                   <div
                     className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${
                       isSelected
-                        ? 'bg-lilo-600 border-lilo-500'
-                        : 'border-text-muted'
+                        ? 'bg-[#7c5839] border-[#61432a]'
+                        : 'border-[#978777]'
                     }`}
                   >
-                    {isSelected && <Check className="w-3 h-3 text-white" />}
+                    {isSelected && <Check className="w-3.5 h-3.5 text-white" />}
                   </div>
                 </button>
               );
@@ -119,50 +135,60 @@ export default function LearningControls() {
         </div>
 
         {/* Banned Topics */}
-        <div className="glass-card p-6">
-          <h2 className="text-lg font-semibold text-text-primary mb-2">Banned Topics</h2>
-          <p className="text-sm text-text-muted mb-5">LILO will never discuss these, redirecting politely instead</p>
+        <div className="card-light p-6">
+          <div className="flex items-center gap-2 mb-1">
+            <ShieldAlert className="w-5 h-5 text-[#cd7b6b]" />
+            <h2 className="text-lg font-bold text-[#231c18]">Banned Topics</h2>
+          </div>
+          <p className="text-xs text-[#76685c] mb-5">LILO will avoid these subjects and redirect politely</p>
 
-          {/* Input */}
+          {/* Add Input */}
           <div className="flex gap-2 mb-5">
             <input
               type="text"
               value={newBanned}
               onChange={(e) => setNewBanned(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && addBanned()}
-              placeholder="e.g. ghosts, violence, scary stories..."
-              className="flex-1 px-4 py-3 rounded-xl bg-surface-lighter border border-glass-border text-text-primary placeholder-text-muted focus:outline-none focus:border-lilo-500 focus:ring-1 focus:ring-lilo-500/30 transition-all text-sm"
+              placeholder="Add topic e.g. ghosts, monsters..."
+              className="flex-1 px-4 py-2.5 rounded-xl bg-[#f6eee4] border border-[rgba(196,164,130,0.4)] text-[#231c18] placeholder-[#978777] focus:outline-none focus:border-[#7c5839] focus:ring-1 focus:ring-[#7c5839]/30 text-sm font-medium"
             />
             <button
               onClick={addBanned}
-              className="px-4 py-3 rounded-xl bg-lilo-600/20 border border-lilo-500/30 text-lilo-300 hover:bg-lilo-600/30 transition-all"
+              className="px-4 py-2.5 rounded-xl bg-[#7c5839] text-white hover:bg-[#61432a] transition-all flex items-center justify-center font-semibold text-sm shadow-sm"
             >
-              <Plus className="w-5 h-5" />
+              <Plus className="w-4 h-4" />
             </button>
           </div>
 
-          {/* Tags */}
+          {/* Banned Topic Tags */}
           {bannedTopics.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 mb-6">
               {bannedTopics.map((topic) => (
-                <button key={topic} onClick={() => removeBanned(topic)} className="tag-badge">
+                <span
+                  key={topic}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-[#fce8cc] text-[#8c5711] border border-[#e3a54b]/40 shadow-xs"
+                >
                   {topic}
-                  <X className="w-3 h-3" />
-                </button>
+                  <button
+                    onClick={() => removeBanned(topic)}
+                    className="p-0.5 rounded-full hover:bg-[#8c5711]/15 text-[#8c5711] transition-all"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
               ))}
             </div>
           ) : (
-            <div className="text-center py-8">
-              <p className="text-text-muted text-sm">No banned topics yet</p>
-              <p className="text-text-muted text-xs mt-1">Add topics above that LILO should avoid</p>
+            <div className="text-center py-6 border border-dashed border-[rgba(196,164,130,0.4)] rounded-xl mb-6">
+              <p className="text-[#978777] text-xs font-medium">No banned topics configured</p>
             </div>
           )}
 
-          {/* Info Box */}
-          <div className="mt-6 p-4 rounded-xl bg-surface/60 border border-glass-border">
-            <p className="text-xs text-text-muted">
-              💡 If a child asks about a banned topic, LILO will gently redirect: "That's a bit too
-              complicated for today! Want to hear a cool space fact instead?"
+          {/* Redirection Note */}
+          <div className="p-4 rounded-xl bg-[#e6dbcd]/80 border border-[rgba(196,164,130,0.3)] space-y-1">
+            <p className="text-xs font-semibold text-[#231c18]">💡 Smart Gentle Redirection</p>
+            <p className="text-xs text-[#6e5f52] leading-relaxed">
+              If Aarav asks about a banned topic, LILO politely redirects: "That's a bit tricky for today! Want to hear a cool space riddle instead?"
             </p>
           </div>
         </div>
@@ -170,10 +196,10 @@ export default function LearningControls() {
 
       {/* Save Button */}
       <div className="mt-6 flex justify-end">
-        <button onClick={handleSave} disabled={saving} className="btn-primary flex items-center gap-2">
+        <button onClick={handleSave} disabled={saving} className="btn-primary flex items-center gap-2 px-6 py-3 text-sm">
           {saved ? (
             <>
-              <Check className="w-4 h-4" /> Saved!
+              <Check className="w-4 h-4 text-emerald-300" /> Saved Controls!
             </>
           ) : saving ? (
             <>
@@ -181,7 +207,7 @@ export default function LearningControls() {
             </>
           ) : (
             <>
-              <Save className="w-4 h-4" /> Save Controls
+              <Save className="w-4 h-4" /> Save Learning Controls
             </>
           )}
         </button>
@@ -189,3 +215,4 @@ export default function LearningControls() {
     </div>
   );
 }
+
