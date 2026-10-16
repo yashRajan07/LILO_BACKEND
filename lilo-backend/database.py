@@ -17,6 +17,41 @@ logger = logging.getLogger(__name__)
 DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "lilo_parent.db")
 
 
+# ── Bypass Switch ──────────────────────────────────────────────────
+# Set BYPASS_DB = True to disable all SQLite disk access, checks, and updates.
+BYPASS_DB = True
+
+_IN_MEMORY_PROFILE = {
+    "id": 1,
+    "child_name": "Yash",
+    "age": 7,
+    "hinglish_ratio": "moderate_hinglish",
+}
+
+_IN_MEMORY_LEARNING_CONTROLS = {
+    "id": 1,
+    "target_topics": ["science_space", "indian_culture", "math_riddles", "moral_stories", "animals_nature"],
+    "banned_topics": ["scary stories", "monsters"],
+}
+
+_IN_MEMORY_SCHEDULES = {
+    "id": 1,
+    "quiet_hours_enabled": 0,
+    "quiet_start": "20:00",
+    "quiet_end": "07:00",
+    "weekday_enabled": 1,
+    "weekend_enabled": 0,
+    "daily_limit_minutes": 60,
+}
+
+_IN_MEMORY_DEVICE_STATUS = {
+    "id": 1,
+    "is_online": 1,
+    "last_connected_at": None,
+    "ip_address": "127.0.0.1",
+}
+
+
 @contextmanager
 def get_db():
     """Context manager for SQLite connections with WAL mode."""
@@ -35,6 +70,10 @@ def get_db():
 
 def init_db():
     """Create all tables and seed defaults with rich dummy data if empty."""
+    if BYPASS_DB:
+        logger.info("Database checking and updation bypassed (in-memory mode active)")
+        return
+
     with get_db() as conn:
         conn.executescript("""
             CREATE TABLE IF NOT EXISTS child_profile (
@@ -141,12 +180,22 @@ def init_db():
 # ── Child Profile ─────────────────────────────────────────────────
 
 def get_child_profile() -> dict:
+    if BYPASS_DB:
+        return dict(_IN_MEMORY_PROFILE)
     with get_db() as conn:
         row = conn.execute("SELECT * FROM child_profile WHERE id = 1").fetchone()
         return dict(row) if row else {}
 
 
 def update_child_profile(child_name: str = None, age: int = None, hinglish_ratio: str = None) -> dict:
+    if BYPASS_DB:
+        if child_name is not None:
+            _IN_MEMORY_PROFILE["child_name"] = child_name
+        if age is not None:
+            _IN_MEMORY_PROFILE["age"] = age
+        if hinglish_ratio is not None:
+            _IN_MEMORY_PROFILE["hinglish_ratio"] = hinglish_ratio
+        return dict(_IN_MEMORY_PROFILE)
     updates, params = [], []
     if child_name is not None:
         updates.append("child_name = ?")
@@ -167,6 +216,8 @@ def update_child_profile(child_name: str = None, age: int = None, hinglish_ratio
 # ── Learning Controls ─────────────────────────────────────────────
 
 def get_learning_controls() -> dict:
+    if BYPASS_DB:
+        return dict(_IN_MEMORY_LEARNING_CONTROLS)
     with get_db() as conn:
         row = conn.execute("SELECT * FROM learning_controls WHERE id = 1").fetchone()
         if not row:
@@ -178,6 +229,12 @@ def get_learning_controls() -> dict:
 
 
 def update_learning_controls(target_topics: list = None, banned_topics: list = None) -> dict:
+    if BYPASS_DB:
+        if target_topics is not None:
+            _IN_MEMORY_LEARNING_CONTROLS["target_topics"] = target_topics
+        if banned_topics is not None:
+            _IN_MEMORY_LEARNING_CONTROLS["banned_topics"] = banned_topics
+        return dict(_IN_MEMORY_LEARNING_CONTROLS)
     updates, params = [], []
     if target_topics is not None:
         updates.append("target_topics = ?")
@@ -195,6 +252,8 @@ def update_learning_controls(target_topics: list = None, banned_topics: list = N
 # ── Schedules ─────────────────────────────────────────────────────
 
 def get_schedules() -> dict:
+    if BYPASS_DB:
+        return dict(_IN_MEMORY_SCHEDULES)
     with get_db() as conn:
         row = conn.execute("SELECT * FROM schedules WHERE id = 1").fetchone()
         return dict(row) if row else {}
@@ -208,6 +267,20 @@ def update_schedules(
     weekend_enabled: bool = None,
     daily_limit_minutes: int = None,
 ) -> dict:
+    if BYPASS_DB:
+        if quiet_hours_enabled is not None:
+            _IN_MEMORY_SCHEDULES["quiet_hours_enabled"] = int(quiet_hours_enabled)
+        if quiet_start is not None:
+            _IN_MEMORY_SCHEDULES["quiet_start"] = quiet_start
+        if quiet_end is not None:
+            _IN_MEMORY_SCHEDULES["quiet_end"] = quiet_end
+        if weekday_enabled is not None:
+            _IN_MEMORY_SCHEDULES["weekday_enabled"] = int(weekday_enabled)
+        if weekend_enabled is not None:
+            _IN_MEMORY_SCHEDULES["weekend_enabled"] = int(weekend_enabled)
+        if daily_limit_minutes is not None:
+            _IN_MEMORY_SCHEDULES["daily_limit_minutes"] = int(daily_limit_minutes)
+        return dict(_IN_MEMORY_SCHEDULES)
     updates, params = [], []
     if quiet_hours_enabled is not None:
         updates.append("quiet_hours_enabled = ?")
@@ -236,6 +309,8 @@ def update_schedules(
 
 def is_quiet_hours_active() -> bool:
     """Check if the current time falls within the configured quiet hours window."""
+    if BYPASS_DB:
+        return False
     sched = get_schedules()
     if not sched.get("quiet_hours_enabled"):
         return False
@@ -262,6 +337,11 @@ def is_quiet_hours_active() -> bool:
 # ── Device Status ─────────────────────────────────────────────────
 
 def set_device_online(ip_address: str = None):
+    if BYPASS_DB:
+        _IN_MEMORY_DEVICE_STATUS["is_online"] = 1
+        _IN_MEMORY_DEVICE_STATUS["ip_address"] = ip_address
+        _IN_MEMORY_DEVICE_STATUS["last_connected_at"] = datetime.now().isoformat()
+        return
     with get_db() as conn:
         conn.execute(
             "UPDATE device_status SET is_online = 1, last_connected_at = ?, ip_address = ? WHERE id = 1",
@@ -270,11 +350,16 @@ def set_device_online(ip_address: str = None):
 
 
 def set_device_offline():
+    if BYPASS_DB:
+        _IN_MEMORY_DEVICE_STATUS["is_online"] = 0
+        return
     with get_db() as conn:
         conn.execute("UPDATE device_status SET is_online = 0 WHERE id = 1")
 
 
 def get_device_status() -> dict:
+    if BYPASS_DB:
+        return dict(_IN_MEMORY_DEVICE_STATUS)
     with get_db() as conn:
         row = conn.execute("SELECT * FROM device_status WHERE id = 1").fetchone()
         return dict(row) if row else {}
@@ -283,6 +368,8 @@ def get_device_status() -> dict:
 # ── Usage Logs ────────────────────────────────────────────────────
 
 def log_session_duration(duration_seconds: float):
+    if BYPASS_DB:
+        return
     today = date.today().isoformat()
     with get_db() as conn:
         conn.execute(
@@ -293,6 +380,8 @@ def log_session_duration(duration_seconds: float):
 
 def get_daily_screen_time(target_date: str = None) -> float:
     """Returns total usage time in seconds for a given date (defaults to today)."""
+    if BYPASS_DB:
+        return 0.0
     target = target_date or date.today().isoformat()
     with get_db() as conn:
         row = conn.execute(
@@ -306,6 +395,8 @@ get_daily_usage_time = get_daily_screen_time
 
 def get_weekly_screen_time() -> list:
     """Returns usage time for the past 7 days as a list of {date, total_seconds}."""
+    if BYPASS_DB:
+        return []
     with get_db() as conn:
         rows = conn.execute("""
             SELECT session_date, COALESCE(SUM(duration_seconds), 0) as total_seconds
@@ -322,6 +413,8 @@ get_weekly_usage_time = get_weekly_screen_time
 # ── Topic Logs ────────────────────────────────────────────────────
 
 def log_topic(topic: str, question: str = None):
+    if BYPASS_DB:
+        return
     with get_db() as conn:
         conn.execute(
             "INSERT INTO topic_logs (topic, question) VALUES (?, ?)",
@@ -331,6 +424,8 @@ def log_topic(topic: str, question: str = None):
 
 def get_weekly_topic_distribution() -> list:
     """Returns topic counts for the past 7 days for pie chart."""
+    if BYPASS_DB:
+        return []
     with get_db() as conn:
         rows = conn.execute("""
             SELECT topic, COUNT(*) as count
@@ -344,6 +439,8 @@ def get_weekly_topic_distribution() -> list:
 
 def get_curiosity_highlights(limit: int = 10) -> list:
     """Returns the most recent unique questions for the highlights card."""
+    if BYPASS_DB:
+        return []
     with get_db() as conn:
         rows = conn.execute("""
             SELECT question, topic, logged_at

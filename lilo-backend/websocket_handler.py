@@ -31,16 +31,17 @@ async def handle_esp32_connection(websocket: WebSocket):
     await websocket.accept()
     logger.info("LILO device connected — starting handshake")
 
-    # ── Bedtime Lock Enforcement ──────────────────────────────────
-    if is_quiet_hours_active():
-        logger.info("Bedtime lock is active — rejecting ESP32 connection")
-        await websocket.send_text(json.dumps({
-            "type": "error",
-            "reason": "bedtime_lock",
-            "message": "It's bedtime! LILO is sleeping now. Come back tomorrow morning!",
-        }))
-        await websocket.close(code=4003, reason="Bedtime lock active")
-        return
+    # ── Bedtime Lock Enforcement (Bypassed for now) ───────────────
+    # if is_quiet_hours_active():
+    #     logger.info("Bedtime lock is active — rejecting ESP32 connection")
+    #     await websocket.send_text(json.dumps({
+    #         "type": "error",
+    #         "reason": "bedtime_lock",
+    #         "message": "It's bedtime! LILO is sleeping now. Come back tomorrow morning!",
+    #     }))
+    #     await websocket.close(code=4003, reason="Bedtime lock active")
+    #     return
+
 
     session_start = time.monotonic()
     client_ip = None
